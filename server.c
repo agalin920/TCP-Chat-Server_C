@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define PORT "9074"   // pPuerto
+#define PORT "9074"   // Puerto
 
 
 int main(void)
@@ -42,20 +42,16 @@ int main(void)
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    if ((rv = getaddrinfo(NULL, PORT, &hints, &ai)) != 0) {
-        fprintf(stderr, "selectserver: %s\n", gai_strerror(rv));
-        exit(1);
-    }
     
+    getaddrinfo(NULL, PORT, &hints, &ai);
+        
+    //Loop resultados
     for(p = ai; p != NULL; p = p->ai_next)
     {
         listener = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (listener < 0) { 
             continue;
         }
-        
-        // lose the pesky "address already in use" error message
-        setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
 
         if (bind(listener, p->ai_addr, p->ai_addrlen) < 0) {
             close(listener);
@@ -64,39 +60,23 @@ int main(void)
 
         break;
     }
-
-    // if we got here, bondage failed.
-    if (p == NULL) {
-        fprintf(stderr, "selectserver: failed to bind\n");
-        exit(2);
-    }
-
-    freeaddrinfo(ai); //all done; free memory
     
-    puts("binding successful!");
-    // listen
-    if (listen(listener, 10) == -1)
-    {
-        perror("listen");
-        exit(3);
-    }
-    puts("hearing aid is on, server listening...");
+    printf("Servidor inicializado\n");
+    listen(listener, 10);
+    printf("Servidor esuchando...\n");
     
-    // add the listener to the master set
+    // Agregar listener al set master
     FD_SET(listener, &master);
 
-    // keep track of the biggest file descriptor
-    fdmax = listener; //(it's this one so far)
+    // Trackear descriptor mas grande
+    fdmax = listener; 
 
     // main loop
-    for(;;)
+    while(1)
     {
-        read_fds = master; // copy it
-        if (select(fdmax+1, &read_fds, NULL, NULL, NULL) == -1)
-        {
-            perror("select");
-            exit(4);
-        }
+        read_fds = master; // Copiar
+        select(fdmax+1, &read_fds, NULL, NULL, NULL);
+        
 
         //run through the existing connections looking for data to read
         for(i = 0; i <= fdmax; i++) //EDIT HERE
