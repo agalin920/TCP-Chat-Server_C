@@ -42,14 +42,14 @@ int main(void)
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    
+
     getaddrinfo(NULL, PORT, &hints, &ai);
-        
+
     //Loop resultados
     for(p = ai; p != NULL; p = p->ai_next)
     {
         listener = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-        if (listener < 0) { 
+        if (listener < 0) {
             continue;
         }
 
@@ -60,23 +60,23 @@ int main(void)
 
         break;
     }
-    
+
     printf("Servidor inicializado\n");
     listen(listener, 10);
     printf("Servidor esuchando...\n");
-    
+
     // Agregar listener al set master
     FD_SET(listener, &master);
 
     // Trackear descriptor mas grande
-    fdmax = listener; 
+    fdmax = listener;
 
     // main loop
     while(1)
     {
         read_fds = master; // Copiar
         select(fdmax+1, &read_fds, NULL, NULL, NULL);
-        
+
 
         //run through the existing connections looking for data to read
         for(i = 0; i <= fdmax; i++) //EDIT HERE
@@ -104,7 +104,7 @@ int main(void)
                         }
                         printf("Conexion nueva en Socket:%d\n",newfd);
                     }
-                } 
+                }
                 else
                 {
                     // handle data from a client
@@ -127,7 +127,7 @@ int main(void)
                         for(j = 0; j <= fdmax; j++)
                         {
                             // broadcast to everyone
-                            if (FD_ISSET(j, &master)) 
+                            if (FD_ISSET(j, &master))
                             {
                                 // except the listener and ourselves
                                 if (j != listener && j != i)
@@ -144,7 +144,7 @@ int main(void)
             } //new incoming connection
         } //looping through file descriptors
     } //for(;;)
-    
+
     return 0;
 }
 

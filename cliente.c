@@ -56,19 +56,19 @@ int main(int argc, char *argv[])
         }
         break;
     }
-    
+
     //Thread para recibir mensajes
     pthread_t recibir_thread;
     pthread_create(&recibir_thread, NULL, recibir, (void*)(intptr_t) sockfd);
 
     //Obtener Nick
     printf("Nick: ");
-    fgets(nick, 30, stdin);  
-      
+    fgets(nick, 30, stdin);
+
     printf("Conectado al servidor Minichat\n");
     printf("Escribe 'exit' para salirte\n\n\n");
 
-    
+
     while(1)
     {
         char temp[6];
@@ -79,8 +79,8 @@ int main(int argc, char *argv[])
 
         if(bufferMensaje[0] == 'e' && bufferMensaje[1] == 'x' && bufferMensaje[2] == 'i' && bufferMensaje[3] == 't')
             return 1;
-        
-        //Agregar nick al mensaje   
+
+        //Agregar nick al mensaje
         int count = 0;
         while(count < strlen(nick))
         {
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
         count--;
         mensaje[count] = '>';
         count++;
-        
+
 
         for(int i = 0; i < strlen(bufferMensaje); i++)
         {
@@ -98,18 +98,18 @@ int main(int argc, char *argv[])
             count++;
         }
         mensaje[count] = '\0';
-        
+
         //Imprimir mensaje de nuevo con nick
         //puts(message);
-        
+
         //Mandar mensaje
-        send(sockfd, mensaje, strlen(mensaje), 0); 
-        
+        send(sockfd, mensaje, strlen(mensaje), 0);
+
         //Resetear buffer
         memset(&bufferMensaje, sizeof(bufferMensaje), 0);
-        
+
     }
-    
+
     //puts("Closing socket connection");
     pthread_join(recibir_thread , NULL);
     close(sockfd);
@@ -123,7 +123,7 @@ void *recibir(void *sock_fd)
     int sfd = (intptr_t) sock_fd;
     char buffer[100];
     int numBytes;
-    
+
     while(1)
     {
         numBytes = recv(sfd, buffer, 100-1, 0);
