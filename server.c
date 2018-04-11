@@ -10,17 +10,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define PORT "9034"   // port we're listening on
+#define PORT "9074"   // pPuerto
 
-// get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa)
-{
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    }
-
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
 
 int main(void)
 {
@@ -131,10 +122,7 @@ int main(void)
                         {   // keep track of the max
                             fdmax = newfd;
                         }
-                        printf("selectserver: new connection from %s on "
-                               "socket %d\n", inet_ntop(remoteaddr.ss_family,
-                               get_in_addr((struct sockaddr*)&remoteaddr),
-                               remoteIP, INET6_ADDRSTRLEN), newfd);
+                        printf("Conexion nueva en Socket:%d\n",newfd);
                     }
                 } 
                 else
@@ -144,7 +132,7 @@ int main(void)
                     {   // got error or connection closed by client
                         if (nbytes == 0)
                         {   // connection closed
-                            printf("selectserver: socket %d hung up\n", i);
+                            printf("Socket %d disconectado\n",i);
                         }
                         else
                         {
@@ -179,3 +167,4 @@ int main(void)
     
     return 0;
 }
+
