@@ -56,8 +56,6 @@ int main(int argc, char *argv[])
         }
         break;
     }
-
-    freeaddrinfo(servinfo);
     
     //Thread para recibir mensajes
     pthread_t recibir_thread;
