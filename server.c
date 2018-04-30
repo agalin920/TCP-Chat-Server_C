@@ -15,29 +15,24 @@
 
 int main(void)
 {
-    fd_set master;    //master file descriptor list
-    fd_set read_fds;  //temp file descriptor list for select()
-    int fdmax;        //max. amount of file descriptors
-
-    int listener;     //listening socket descriptor
-    int newfd;        //newly accept()ed socket descriptor
-    struct sockaddr_storage remoteaddr; //client address
+    fd_set master;    //lista descriptor maestro
+    fd_set read_fds;  //temp list para select
+    int fdmax;        //cantidad max de fd
+    int yes=1;   
+    int listener;     
+    int newfd;        //descriptor nuevo (socket)
+    struct sockaddr_storage remoteaddr; //Dirrecion cliente
     socklen_t addrlen;
-
-    char buf[256];    //buffer for client data
+    char buf[100];    //buffer for client data
     int nbytes;
-
-    char remoteIP[INET6_ADDRSTRLEN];
-
-    int yes=1;        //for setsockopt() SO_REUSEADDR, below
-    int i, j, rv;
+    int i, j;
 
     struct addrinfo hints, *ai, *p;
 
-    FD_ZERO(&master);    //FD_ZERO works like memset 0;
-    FD_ZERO(&read_fds);  //clear the master and temp sets
+    FD_ZERO(&master);    //memset 0
+    FD_ZERO(&read_fds);  //resetear sets
 
-    // fetch a socket, bind it
+    // Bind un socket
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
@@ -71,65 +66,59 @@ int main(void)
     // Trackear descriptor mas grande
     fdmax = listener;
 
-    // main loop
+    // Loop infinito
     while(1)
     {
         read_fds = master; // Copiar
         select(fdmax+1, &read_fds, NULL, NULL, NULL);
 
 
-        //run through the existing connections looking for data to read
-        for(i = 0; i <= fdmax; i++) //EDIT HERE
+        //Loop atravez conexiones para encontrar mensajes
+        for(i = 0; i <= fdmax; i++) 
         {
             if (FD_ISSET(i, &read_fds))
-            {   // we got one
+            {  
                 if (i == listener)
                 {
-                    // handle new connections
+                    // Nueva conexion
                     addrlen = sizeof remoteaddr;
                     newfd = accept(listener,
                         (struct sockaddr *)&remoteaddr,
                         &addrlen);
-
-                    if (newfd == -1)
-                    {
-                        perror("accept");
-                    }
-                    else
-                    {
-                        FD_SET(newfd, &master); // pass to master set
+                   
+                        FD_SET(newfd, &master); // Paar a master set
                         if (newfd > fdmax)
-                        {   // keep track of the max
+                        {   // Trackear max
                             fdmax = newfd;
                         }
                         printf("Conexion nueva en Socket:%d\n",newfd);
-                    }
+                    
                 }
                 else
                 {
-                    // handle data from a client
+                    // Recibir mensaje del cliente
                     if ((nbytes = recv(i, buf, sizeof buf, 0)) <= 0)
-                    {   // got error or connection closed by client
+                    {   
                         if (nbytes == 0)
-                        {   // connection closed
+                        {   // Conexion terminada
                             printf("Socket %d disconectado\n",i);
                         }
                         else
                         {
                             perror("recv");
                         }
-                        close(i); // bye!
-                        FD_CLR(i, &master); // remove from master set
+                        close(i); // Cerrar Socket
+                        FD_CLR(i, &master); // Remover del master set
                     }
                     else
                     {
-                        // we got some data from a client
+                        // Hay mensaje
                         for(j = 0; j <= fdmax; j++)
                         {
-                            // broadcast to everyone
+                            // Hacer el broadcast
                             if (FD_ISSET(j, &master))
                             {
-                                // except the listener and ourselves
+                                // Menos al listener y al server
                                 if (j != listener && j != i)
                                 {
                                     if (send(j, buf, nbytes, 0) == -1)
@@ -140,11 +129,10 @@ int main(void)
                             }
                         }
                     }
-                }//handle data from client
-            } //new incoming connection
-        } //looping through file descriptors
-    } //for(;;)
+                }
+            } 
+        } 
+    } 
 
     return 0;
 }
-
