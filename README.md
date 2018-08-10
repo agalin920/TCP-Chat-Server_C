@@ -1,2 +1,2 @@
-# TCP-Chat-Server_C
-Multiclient chat server
+# tcp-chat-server
+Multiclient chat server made with in C
